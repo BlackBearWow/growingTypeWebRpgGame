@@ -1,16 +1,10 @@
 from flask import Flask, request, session, redirect, url_for, render_template, make_response, jsonify, Response, send_from_directory
-import mysql.connector
 from datetime import timedelta
 import secrets
+import jsGameDB
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()  # secret_key는 서버상에 동작하는 어플리케이션 구분하기 위해 사용하고 복잡하게 만들어야 합니다.
-
-HOST="localhost"
-USER="root"
-PASSWORD="onlyroot"
-PORT="3306"
-DATABASE="jsgame"
 
 #id가 없는 세션일 경우인가?
 def firstAccess():
@@ -99,36 +93,27 @@ def image(path):
 #id, passwd, nickname을 받아 회원가입이 가능하다면 db에 insert, 아니면 오류메시지를 표시
 @app.route('/canISignUp', methods = ['POST', 'GET'])
 def canISignUp():
-    con = mysql.connector.connect(host=HOST, password=PASSWORD, user=USER, port=PORT, database=DATABASE)
-    mycursor = con.cursor(dictionary=True)
     id = request.args.get('id') #get방식에서 사용하는방법
     passwd = request.args.get('passwd')
     nickname = request.args.get('nickname')
     #중복된 id가 있다면 오류.
-    mycursor.execute("select * from account where id='"+id+"';")
-    myresult = mycursor.fetchall()
+    myresult = jsGameDB.select("select * from account where id='"+id+"';")
     if(len(myresult)!=0):
         return "idOverlapped"
     #중복된 nickname이 있다면 오류.
-    mycursor.execute("select * from account where nickname='"+nickname+"';")
-    myresult = mycursor.fetchall()
+    myresult = jsGameDB.select("select * from account where nickname='"+nickname+"';")
     if(len(myresult)!=0):
         return "nickNameOverlapped"
     #id와 nickname이 중복되지 않았다면 회원가입 성공.
-    mycursor.execute("insert into account(id, passwd, nickname) values('"+id+"', '"+passwd+"', '"+nickname+"');")
-    con.commit()
-    mycursor.close()
+    jsGameDB.insert("insert into account(id, passwd, nickname) values('"+id+"', '"+passwd+"', '"+nickname+"');")
     return "ok"
 
 #id, passwd, nickname을 받아 회원가입이 가능하다면 db에 insert, 아니면 오류메시지를 표시
 @app.route('/canISignIn', methods = ['POST', 'GET'])
 def canISignIp():
-    con = mysql.connector.connect(host=HOST, password=PASSWORD, user=USER, port=PORT, database=DATABASE)
-    mycursor = con.cursor(dictionary=True)
     id = request.form["id"] #post방식에서 사용하는방법
     passwd = request.form["passwd"]
-    mycursor.execute("select * from account where id='"+id+"';")
-    myresult = mycursor.fetchall()
+    myresult = jsGameDB.select("select * from account where id='"+id+"';")
     if(len(myresult)==0):
         return "idDoesNotExist"
     print(myresult[0]["passwd"])
@@ -140,16 +125,24 @@ def canISignIp():
         session["nickname"] = myresult[0]["nickname"]
         return "ok"
 
-#id, passwd, nickname을 받아 회원가입이 가능하다면 db에 insert, 아니면 오류메시지를 표시
+#클라이언트에서 캐릭터 정보를 요청했을 때 응답
 @app.route('/getCharacterInfo', methods = ['POST', 'GET'])
 def getCharacterInfo():
-    con = mysql.connector.connect(host=HOST, password=PASSWORD, user=USER, port=PORT, database=DATABASE)
-    mycursor = con.cursor(dictionary=True)
-    mycursor.execute("select id, nickname, level, exp, speed, wbLimitQuantity, wbLen, money from account where id='"+session["id"]+"';")
-    myresult = mycursor.fetchall()
+    myresult = jsGameDB.select("select id, nickname, level, exp, speed, wbLimitQuantity, wbLen, money from account where id='"+session["id"]+"';")
     data = jsonify(myresult[0])
-    mycursor.close()
     return data
+
+#클라이언트에서 캐릭터 정보를 저장해달라 요청했을 때
+@app.route('/saveCharacterInfo', methods = ['POST', 'GET'])
+def saveCharacterInfo():
+    level = request.form["level"] #post방식에서 사용하는방법
+    exp = request.form["exp"]
+    speed = request.form["speed"]
+    wbLimitQuantity = request.form["wbLimitQuantity"]
+    wbLen = request.form["wbLen"]
+    money = request.form["money"]
+    jsGameDB.update("update account set level = {}, exp = {}, speed = {}, wbLimitQuantity = {}, wbLen = {}, money = {} where id = '{}'".format(level, exp, speed, wbLimitQuantity, wbLen, money, session["id"]))
+    return "ok"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)

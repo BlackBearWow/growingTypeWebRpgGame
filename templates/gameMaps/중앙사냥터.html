@@ -404,6 +404,34 @@
 			});
         }
 
+        function saveCharacterInfo() //캐릭터의 정보를 서버로 저장
+        {
+            $.ajax({
+	  			url: "/saveCharacterInfo",
+                type: "post",
+  				data: {
+  					level: bazzi.level,
+  					exp: bazzi.exp,
+                    speed: bazzi.speed,
+                    wbLimitQuantity: bazzi.wbLimitQuantity,
+                    wbLen: bazzi.wbLen,
+                    money: bazzi.money
+  				},
+				success: function(data){
+				   	console.log(data);
+				},
+				error: function(error){
+				    console.log(error);
+				}
+			});
+        }
+
+        function gotoHome()
+        {
+            saveCharacterInfo();
+            location.href='/';
+        }
+
         $(document).ready(function(){
             initialize();
         });
@@ -919,8 +947,8 @@
     </center>
     <center>
     <div style="display:inline;">
-    <button onclick="statusToggle()">상태창</button>
-        <button onclick="location.href='/';">홈페이지 이동</button>
+        <button onclick="statusToggle()">상태창</button>
+        <button onclick="gotoHome()">홈페이지 이동</button>
     </div>
     </center>
 </body>
