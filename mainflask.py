@@ -29,12 +29,17 @@ def make_session_permanent():
 @app.route('/', methods = ['POST', 'GET'])
 @app.route('/index.html', methods = ['POST', 'GET'])
 def index():
+    print(dir(session))
     if firstAccess():
         newAccess()
     if session["id"] == "익명":
-        text=render_template("index.html")
+        text=render_template("index_beforeLogin.html")
     else:
-        text=render_template("index.html")
+        myresult = jsGameDB.select("select * from account where id='"+session["id"]+"';")
+        print(myresult)
+        text=render_template("index_afterLogin.html", id = myresult[0]["id"], nickname = myresult[0]["nickname"],
+        level = myresult[0]["level"], exp = myresult[0]["exp"], speed = myresult[0]["speed"], 
+        wbLimitQuantity = myresult[0]["wbLimitQuantity"], wbLen = myresult[0]["wbLen"], money = myresult[0]["money"])
     return text
 
 #회원가입 화면
@@ -89,6 +94,12 @@ def gameMiddleMapEdit():
 @app.route('/image/<path:path>', methods = ['POST', 'GET'])
 def image(path):
     return send_from_directory("templates/image", path)
+
+#로그아웃하면 세션을 없앤다.
+@app.route('/logout', methods = ['POST', 'GET'])
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 #id, passwd, nickname을 받아 회원가입이 가능하다면 db에 insert, 아니면 오류메시지를 표시
 @app.route('/canISignUp', methods = ['POST', 'GET'])

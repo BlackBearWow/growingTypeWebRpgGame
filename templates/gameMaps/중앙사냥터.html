@@ -83,6 +83,7 @@
                 this.waterballoonAttackDelay = 0;   //프레임미다 물풍선을 맞지 않음. 10프레임마다 물풍선을 맞는다.
                 this.monsterHitDamage = [];    //몬스터에게 맞은 데미지
                 this.monsterAttackDelay = 0;   //프레임미다 몬스터에게 맞지 않음. 10프레임마다 물풍선을 맞는다.
+                this.saveCount = 0; //saveCount가 50이 되면 서버에 정보를 저장한다.
                 this.imglist=[
                     [new makeImage("/image/bazzi/배찌01.png"),
                     new makeImage("/image/bazzi/배찌02.png"),
@@ -501,6 +502,7 @@
             waterballoonHitCharacterDamageCount();      //물풍선이 캐릭터를 때린 텍스트 점점 위로 올라가기
             monsterHitCharacter();  //몬스터가 캐릭터를 때림
             monsterHitCharacterDamageCount();   //몬스터가 캐릭터를 때린 텍스트 점점 위로 올라가기
+            saveCharacterInfoEveryMinute(); //1분마다 서버에 정보를 저장함.
         }
 
         function setBackgroundCoordinate()
@@ -888,6 +890,14 @@
             }
         }
 
+        function saveCharacterInfoEveryMinute()
+        {
+            bazzi.saveCount++;
+            if(bazzi.saveCount >= 50){
+                saveCharacterInfo();
+                bazzi.saveCount=0;
+            }
+        }
         function draw()
         {
             drawBackground();   //배경그리기
