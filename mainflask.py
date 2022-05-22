@@ -29,7 +29,6 @@ def make_session_permanent():
 @app.route('/', methods = ['POST', 'GET'])
 @app.route('/index.html', methods = ['POST', 'GET'])
 def index():
-    print(dir(session))
     if firstAccess():
         newAccess()
     if session["id"] == "익명":
@@ -47,7 +46,7 @@ def index():
 def signUp():
     if firstAccess():
         return redirect(url_for('index'))
-    text=render_template("signUp.html")
+    text=render_template("signUp.html", id = session["id"])
     return text
 
 #로그인 화면
@@ -55,7 +54,7 @@ def signUp():
 def signIn():
     if firstAccess():
         return redirect(url_for('index'))
-    text=render_template("signIn.html")
+    text=render_template("signIn.html", id = session["id"])
     return text
 
 #게임 맵 리스트 화면
@@ -63,7 +62,7 @@ def signIn():
 def GameMapList():
     if firstAccess():
         return redirect(url_for('index'))
-    text=render_template("GameMapList.html")
+    text=render_template("GameMapList.html", id = session["id"])
     return text
 
 #유저 랭킹 화면
@@ -71,7 +70,9 @@ def GameMapList():
 def Rank():
     if firstAccess():
         return redirect(url_for('index'))
-    text=render_template("Rank.html")
+    myresult = jsGameDB.select("select nickname, level, exp from account order by level desc, exp desc")
+    print(len(myresult))
+    text=render_template("Rank.html", id = session["id"], len = len(myresult), myresult = myresult)
     return text
 
 #중앙사냥터 화면

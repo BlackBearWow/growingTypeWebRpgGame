@@ -28,9 +28,11 @@
    			<li class="nav-item">
         		<a class="nav-link" href="Rank.html" target="_self">Rank</a>
 	    	</li>
+			{% if id != "익명" %}
 	    	<li class="nav-item">
         		<a class="nav-link" href="logout" target="_self">로그아웃</a>
     		</li>
+			{% endif %}
     	</ul>
 	</nav>
 	<br>
@@ -38,8 +40,11 @@
 	<div class="container p-3 my-3 bg-dark text-white">
 		<h4>랭킹</h4>
 		<ul class="list-group">
-			<li class="list-group-item list-group-item-action"><a>1위: 짜짬뽕면 level: 232 exp: 245</a> <img src="/image/bazzi/배찌31.png" alt='배찌'></li>
-			<li class="list-group-item list-group-item-action"><a>2위: 무림고수 level: 200 exp: 245</a> <img src="/image/bazzi/배찌32.png" alt='배찌'></li>
+			{% for i in range(len) %}
+			<li class="list-group-item list-group-item-action"><a>{{i+1}}위: {{myresult[i]["nickname"]}} level: {{myresult[i]["level"]}} exp: {{myresult[i]["exp"]}}</a> <img src="/image/bazzi/배찌31.png" alt='배찌'></li>
+			{% endfor %}
+			<!--li class="list-group-item list-group-item-action"><a>1위: 짜짬뽕면 level: 232 exp: 245</a> <img src="/image/bazzi/배찌31.png" alt='배찌'></li>
+			<li class="list-group-item list-group-item-action"><a>2위: 무림고수 level: 200 exp: 245</a> <img src="/image/bazzi/배찌32.png" alt='배찌'></li-->
 		</ul>
 	</div>
     </body>

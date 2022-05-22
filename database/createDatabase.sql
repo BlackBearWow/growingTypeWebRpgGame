@@ -16,5 +16,3 @@ create table account(
 	money int DEFAULT 0,
 	primary key(id)
 );
-
-#insert into account values ("admin", "1234", "admin", 20, 1, 2.0, 3, 3, 5000);
