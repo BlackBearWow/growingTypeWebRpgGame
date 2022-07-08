@@ -1,5 +1,6 @@
 from flask import Flask, request, session, redirect, url_for, render_template, make_response, jsonify, Response, send_from_directory
 from datetime import timedelta
+import hashlib #sha256해쉬를 이용하기 위해 필요한 라이브러리
 import secrets
 import jsGameDB
 
@@ -23,7 +24,7 @@ def newAccess():
 def make_session_permanent():
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=5)
-    print(session)
+    #print(session)
 
 #메인 화면
 @app.route('/', methods = ['POST', 'GET'])
@@ -91,11 +92,6 @@ def gameMiddleMapEdit():
     text=render_template("gameMaps/중앙사냥터_맵편집.html")
     return text
 
-#이미지 response
-@app.route('/image/<path:path>', methods = ['POST', 'GET'])
-def image(path):
-    return send_from_directory("templates/image", path)
-
 #로그아웃하면 세션을 없앤다.
 @app.route('/logout', methods = ['POST', 'GET'])
 def logout():
@@ -117,7 +113,7 @@ def canISignUp():
     if(len(myresult)!=0):
         return "nickNameOverlapped"
     #id와 nickname이 중복되지 않았다면 회원가입 성공.
-    jsGameDB.insert("insert into account(id, passwd, nickname) values('"+id+"', '"+passwd+"', '"+nickname+"');")
+    jsGameDB.insert("insert into account(id, passwd, nickname) values('"+id+"', '"+hashlib.sha256(passwd.encode()).hexdigest()+"', '"+nickname+"');")
     return "ok"
 
 #id, passwd, nickname을 받아 회원가입이 가능하다면 db에 insert, 아니면 오류메시지를 표시
@@ -129,7 +125,7 @@ def canISignIp():
     if(len(myresult)==0):
         return "idDoesNotExist"
     print(myresult[0]["passwd"])
-    if(myresult[0]["passwd"]!=passwd):
+    if(myresult[0]["passwd"]!=hashlib.sha256(passwd.encode()).hexdigest()):
         return "incorrectPassword"
     else:
         #해당세션에 정보부여
@@ -155,6 +151,16 @@ def saveCharacterInfo():
     money = request.form["money"]
     jsGameDB.update("update account set level = {}, exp = {}, speed = {}, wbLimitQuantity = {}, wbLen = {}, money = {} where id = '{}'".format(level, exp, speed, wbLimitQuantity, wbLen, money, session["id"]))
     return "ok"
+
+#이미지 response
+@app.route('/image/<path:path>', methods = ['POST', 'GET'])
+def image(path):
+    return send_from_directory("templates/image", path)
+
+#음악 response
+@app.route('/sound/<path:path>', methods = ['POST', 'GET'])
+def sound(path):
+    return send_from_directory("templates/sound", path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)

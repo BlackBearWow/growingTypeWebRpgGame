@@ -1,4 +1,5 @@
 import mysql.connector
+import hashlib
 
 HOST="localhost"
 USER="root"
@@ -27,7 +28,7 @@ f = open("./database/createDatabase.sql", "rt")
 createDatabase(f.read())
 f.close()
 # id passwd nickname level exp speed wbLimitQuantity wbLen money
-insertSql('insert into account values ("admin", "1234", "admin", 20, 30, 4.0, 5, 5, 5000);')
-insertSql('insert into account values ("guest", "guest", "guest", 20, 1, 2.0, 3, 3, 5000);')
-insertSql('insert into account values ("sce6544", "54540d0", "차돌짬뽕", 10, 1, 2.0, 3, 3, 5000);')
-insertSql('insert into account values ("se654c", "c545cw0", "김치찌개", 10, 1, 2.0, 3, 3, 5000);')
+insertSql('insert into account values ("admin", "'+hashlib.sha256("1234".encode()).hexdigest()+'", "admin", 20, 30, 4.0, 5, 5, 5000);')
+insertSql('insert into account values ("guest", "'+hashlib.sha256("guest".encode()).hexdigest()+'", "guest", 20, 1, 2.0, 3, 3, 5000);')
+insertSql('insert into account values ("sce6544", "'+hashlib.sha256("54e1c6s".encode()).hexdigest()+'", "차돌짬뽕", 10, 1, 2.0, 3, 3, 5000);')
+insertSql('insert into account values ("se654c", "'+hashlib.sha256("3ksc90ix".encode()).hexdigest()+'", "김치찌개", 10, 1, 2.0, 3, 3, 5000);')

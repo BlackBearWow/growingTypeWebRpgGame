@@ -6,8 +6,8 @@ use jsgame;
 drop table if exists account;
 create table account(
 	id varchar(40) not null,
-	passwd varchar(40) null,
-	nickname varchar(40) null,
+	passwd varchar(70) not null,
+	nickname varchar(40) not null,
 	level int DEFAULT 1,
 	exp int DEFAULT 1,
 	speed float DEFAULT 1.2,

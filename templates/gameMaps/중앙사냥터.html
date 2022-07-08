@@ -2,10 +2,13 @@
 <html>
 <head>
     <link rel="shortcut icon" href="https://blackbearwow.github.io/favicon/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript">
         var can;        //canvas 객체
         var ctx;        //context객체를 얻어야 drawimage와 filltext를 할 수 있음
+        var mainInterval;   //interval변수
         var backgroundImage; //배경 이미지 저장변수
         var backgroundx=0,backgroundy=0;    //배경 x y좌표 좌표.
         var keyBoard = {};//키보드를 입력했는지 아닌지 확인하는 맵
@@ -17,6 +20,7 @@
         var waterballoon;   //물풍선 정보 저장 변수
         var item;   //아이템 정보 저장 변수
         var monster;    //몬스터 정보 저장 변수
+        var music;      //음악 저장 변수
         wallList = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -385,6 +389,44 @@
             }
         }
 
+        class musicInfo
+        {
+            constructor()
+            {
+                this.backgroundMusic = new Audio("/sound/background/village.wav");
+                this.waterballoonSound = new Audio("/sound/물풍선.wav");
+                this.waterballoonBoomSound = new Audio("/sound/물풍선펑.wav");
+                this.itemSound = new Audio("/sound/아이템.wav");
+                this.backgroundMusic.onload = function()
+                {
+                    this.backgroundMusic.play();
+                    this.backgroundMusic.loop = true;
+                }
+            }
+            changeVolume(value)
+            {
+                this.backgroundMusic.volume = value * 0.01;
+                this.waterballoonSound.volume = value * 0.01;
+                this.waterballoonBoomSound.volume = value * 0.01;
+                this.itemSound.volume = value * 0.01;
+            }
+            playWaterballoonSound()
+            {
+                this.waterballoonSound.currentTime = 0;
+                this.waterballoonSound.play();
+            }
+            playWaterballoonBoomSound()
+            {
+                this.waterballoonBoomSound.currentTime = 0;
+                this.waterballoonBoomSound.play();
+            }
+            playWateritemSound()
+            {
+                this.itemSound.currentTime = 0;
+                this.itemSound.play();
+            }
+        }
+
         function makeImage(source)
         {
             this.img=new Image();
@@ -459,6 +501,8 @@
 
             monster = new monsterInfo();
 
+            music = new musicInfo();
+
             mouseImage=new Image();
             mouseImage.src=("https://blackbearwow.github.io/image/cursor.png");
             
@@ -486,6 +530,7 @@
 
         function logic()
         {
+            playBackgroundMusic();      //배경음악 재생
             setBackgroundCoordinate();  //배경과 캐릭터의 좌표 설정
             setKeyState();  //어떤 키를 눌렀는지 확인
             mainCharMove(); //메인캐릭터 움직임
@@ -503,6 +548,12 @@
             monsterHitCharacter();  //몬스터가 캐릭터를 때림
             monsterHitCharacterDamageCount();   //몬스터가 캐릭터를 때린 텍스트 점점 위로 올라가기
             saveCharacterInfoEveryMinute(); //1분마다 서버에 정보를 저장함.
+        }
+
+        function playBackgroundMusic()
+        {
+            music.backgroundMusic.play();
+            music.backgroundMusic.loop = true;
         }
 
         function setBackgroundCoordinate()
@@ -593,6 +644,7 @@
                     waterballoon.list[y][x].what = 10;
                     waterballoon.list[y][x].waitTime = 0;
                     bazzi.wbNum += 1;
+                    music.playWaterballoonSound();
                 }
             }
         }
@@ -617,6 +669,7 @@
         }
 
         function waterBalloonPop(x, y) {
+            music.playWaterballoonBoomSound();
             waterballoon.list[y][x].boomTime = 0;
             waterballoon.list[y][x].what = 15;    //물줄기상태이다.
             bazzi.wbNum -= 1;
@@ -738,17 +791,17 @@
                         item.list[bazzi.y / 40][bazzi.x / 40].info = 0;
                         bazzi.speed += 0.1;
                         if (bazzi.maxSpeed < bazzi.speed) bazzi.speed = bazzi.maxSpeed;
-                        //playMusic2("item");
+                        music.playWateritemSound();
                     }
                     else if (item.list[bazzi.y / 40][bazzi.x / 40].info == 2) { //물줄기를 먹었다면 물줄기 길이 증가
                         item.list[bazzi.y / 40][bazzi.x / 40].info = 0;
                         if (bazzi.wbLen < bazzi.wbMaxLen) bazzi.wbLen += 1;
-                        //playMusic2("item");
+                        music.playWateritemSound();
                     }
                     else if (item.list[bazzi.y / 40][bazzi.x / 40].info == 3) { //물풍선을 먹었다면 물풍선 가능개수 증가
                         item.list[bazzi.y / 40][bazzi.x / 40].info = 0;
                         if (bazzi.wbLimitQuantity < bazzi.wbMaxLimitQuantity) bazzi.wbLimitQuantity += 1;
-                        //playMusic2("item");
+                        music.playWateritemSound();
                     }
                 }
             }
@@ -846,6 +899,7 @@
                     || (waterballoon.list[Math.floor(bazzi.y / 40)][Math.floor((bazzi.x + 39) / 40)].what > 10) || (waterballoon.list[Math.floor((bazzi.y + 39) / 40)][Math.floor((bazzi.x + 39) / 40)].what > 10)) {
                     var damage = Math.floor(bazzi.attackMin + Math.random() * (bazzi.attackMax - bazzi.attackMin));
                     bazzi.currentHp -= damage;
+                    if(bazzi.currentHp < 0) { mainCharacterDead(); }
                     bazzi.waterballoonAttackDelay = 10;
                     bazzi.waterballoonHitDamage[bazzi.waterballoonHitDamage.length] = [bazzi.x, bazzi.y, damage, 0];
                 }
@@ -873,11 +927,23 @@
                     if (((bazzi.x + 39) > monster.list[k].x) && (bazzi.x < (monster.list[k].x + 39)) && ((bazzi.y + 39) > monster.list[k].y) && (bazzi.y < (monster.list[k].y + 39))) {
                         var damage = Math.floor(monster.list[k].attack + Math.random() * monster.list[k].attackRand);
                         bazzi.currentHp -= damage;
+                        if(bazzi.currentHp < 0) { mainCharacterDead(); }
                         bazzi.monsterAttackDelay = 10;
                         bazzi.monsterHitDamage[bazzi.monsterHitDamage.length] = [bazzi.x, bazzi.y, damage, 0];
                     }
                 }
             }
+        }
+
+        function mainCharacterDead() //메인 캐릭터 죽음
+        {
+            clearInterval(mainInterval);
+            bazzi.currentHp = 0;
+            bazzi.level -= 1;
+            if(bazzi.level = 0) { bazzi.level = 1; }
+            bazzi.money *= 0.9;
+            alert("hp가 0이되어 기절했습니다. 레벨이 1 낮아지고 돈이 10% 깎입니다.");
+            gotoHome();
         }
 
         function monsterHitCharacterDamageCount()
@@ -893,7 +959,7 @@
         function saveCharacterInfoEveryMinute()
         {
             bazzi.saveCount++;
-            if(bazzi.saveCount >= 50){
+            if(bazzi.saveCount >= 50 * 60){
                 saveCharacterInfo();
                 bazzi.saveCount=0;
             }
@@ -922,16 +988,16 @@
             ctx.drawImage(backgroundImage,backgroundx,backgroundy,1600,1600);
         }
         function drawStatus() {
-            ctx.fillStyle = "tomato"; ctx.fillRect(0, 800, 1200, 28);
-            ctx.fillStyle = '#999999'; ctx.fillRect(2, 802, 1196, 24);
-            ctx.fillStyle = "maroon"; ctx.fillRect(0, 802, 1200 * bazzi.currentHp / bazzi.maxHp, 24);
-            ctx.fillStyle = 'black'; ctx.font = "20px Arial"; ctx.fillText('HP:' + bazzi.currentHp + '/' + bazzi.maxHp, 30, 822);
-            ctx.fillStyle = "Aqua"; ctx.fillRect(0, 828, 1200, 28);
-            ctx.fillStyle = '#999999'; ctx.fillRect(202, 830, 1196, 24);
-            ctx.fillStyle = "Lime"; ctx.fillRect(200, 830, 1000 * bazzi.exp / bazzi.maxExp, 24);
-            ctx.fillStyle = "#0039e6"; ctx.fillRect(0, 830, 200, 24);
-            ctx.fillStyle = 'black'; ctx.font = "20px Arial"; ctx.fillText('Exp:' + bazzi.exp + '/' + bazzi.maxExp, 220, 850);
-            ctx.fillText('Level:' + bazzi.level, 30, 850);
+            ctx.fillStyle = "tomato"; ctx.fillRect(0, 700, 1200, 28);
+            ctx.fillStyle = '#999999'; ctx.fillRect(2, 702, 1196, 24);
+            ctx.fillStyle = "maroon"; ctx.fillRect(0, 702, 1200 * bazzi.currentHp / bazzi.maxHp, 24);
+            ctx.fillStyle = 'black'; ctx.font = "20px Arial"; ctx.fillText('HP:' + bazzi.currentHp + '/' + bazzi.maxHp, 30, 722);
+            ctx.fillStyle = "Aqua"; ctx.fillRect(0, 728, 1200, 28);
+            ctx.fillStyle = '#999999'; ctx.fillRect(202, 730, 1196, 24);
+            ctx.fillStyle = "Lime"; ctx.fillRect(200, 730, 1000 * bazzi.exp / bazzi.maxExp, 24);
+            ctx.fillStyle = "#0039e6"; ctx.fillRect(0, 730, 200, 24);
+            ctx.fillStyle = 'black'; ctx.font = "20px Arial"; ctx.fillText('Exp:' + bazzi.exp + '/' + bazzi.maxExp, 220, 750);
+            ctx.fillText('Level:' + bazzi.level, 30, 750);
 
             if (bazzi.statusShow) {
                 var startX = 100;
@@ -952,13 +1018,15 @@
 </head>
 <body style="background-color:black">
     <center>
-    <canvas id="can" width="1200" height="856" style=" cursor:none;"/>
-    <!--0~800화면. ~828에이치피 ~856exp  1200 856 border:1px solid #c3c3c3;-->
+    <canvas id="can" width="1200" height="756" style=" cursor:none;"/>
+    <!--0~700화면. ~728에이치피 ~856exp  1200 756 border:1px solid #c3c3c3;-->
     </center>
     <center>
     <div style="display:inline;">
-        <button onclick="statusToggle()">상태창</button>
-        <button onclick="gotoHome()">홈페이지 이동</button>
+        <button type ="button" class="btn btn-info" onclick="statusToggle()">상태창</button>
+        <button type ="button" class="btn btn-info" onclick="gotoHome()">홈페이지 이동</button>
+        <label for="gameVolume" style="color:white"> 게임소리:</label>
+        <input type="range" class="" min="0" max="100" id="gmaeVolume" oninput="music.changeVolume(this.value)">
     </div>
     </center>
 </body>
