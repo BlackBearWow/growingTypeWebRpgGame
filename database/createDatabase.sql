@@ -15,4 +15,4 @@ create table account(
 	wbLen int DEFAULT 1,
 	money int DEFAULT 0,
 	primary key(id)
-);
+)default charset=utf8;
